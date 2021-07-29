@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Slider from "react-slick";
+import { useSelector } from 'react-redux';
 import TextField, { Input } from '@material/react-text-field';
 import MaterialIcon from '@material/react-material-icon';
 
@@ -13,6 +13,7 @@ const Home = () => {
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState(null);
   const [modalOpened, setModalOpened] = useState(true);
+  const restaurants = useSelector((state) => state.restaurants);
 
   const settings = {
     dots: false,
@@ -58,9 +59,11 @@ const Home = () => {
                         <Card photo={restaurante} title="nome de algo"/>  
                     </Carousel>
                 </ Search>
-                <RestaurantCard />                
+                {restaurants.map((restaurant) => (
+                <RestaurantCard restaurant={restaurant} />
+                ))};
             </ Container>
-            <Map query={query}/>
+            <Map query={query} />
             <Modal open={modalOpened} onClose={() => setModalOpened(!modalOpened)} />
          </ Wrapper>
     );
