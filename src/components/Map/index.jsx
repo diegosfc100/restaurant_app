@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { GoogleApiWrapper, Map, Marker } from 'google-maps-react';
 
+import { setRestaurants } from '../../redux/modules/restaurants';
+
 export const MapContainer = (props) => {
+    const dispatch = useDispatch();
+    const restaurants = useSelector((state) => state.restaurants);
     const [map, setMap] = useState(null);
     const { google, query } = props;
 
     useEffect(() => {
-        if (query){
+        if(query) {
             searchByQuery(query);
         }
-    }, [query]);
+    },[query]);
 
     function searchByQuery(query) {
         const service = new google.maps.places.PlacesService(map);
@@ -21,9 +26,9 @@ export const MapContainer = (props) => {
             query,
         };
 
-        service.nearbySearch(request, (results, status) => {
+        service.textSearch(request, (results, status) => {
             if( status === google.maps.places.PlacesServiceStatus.OK) {
-                console.log('restaurants>>>>>', results);
+                dispatch(setRestaurants(results));
             }
         });
     }
@@ -37,9 +42,9 @@ export const MapContainer = (props) => {
             type: ['restaurant'],
         };
 
-        service.textSearch(request, (results, status) => {
+        service.nearbySearch(request, (results, status) => {
             if( status === google.maps.places.PlacesServiceStatus.OK) {
-                console.log('restaurants>>>>>', results);
+                dispatch(setRestaurants(results));
             }
         });
     }
@@ -49,7 +54,20 @@ export const MapContainer = (props) => {
         searchNearby(map, map.center);
     }
 
-    return <Map google={google} centerAroundCurrentLocation  onReady={onMapReady} onRecenter={onMapReady} />;
+    return(
+        <Map google={google} centerAroundCurrentLocation onReady={onMapReady} onRecenter={onMapReady}>
+            {restaurants.map((restaurant) => (
+                <Marker 
+                    key={restaurant.place_id}
+                    name={restaurant.name}
+                    position={{
+                        lat: restaurant.geometry.location.lat(),
+                        lng: restaurant.geometry.location.lng(),
+                    }}                
+                />                        
+            ))}             
+        </Map>
+    );
 }; 
 
 export default GoogleApiWrapper({
